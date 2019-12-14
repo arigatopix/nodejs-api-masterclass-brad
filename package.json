@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-api-masterclass-brad",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arigatopix/nodejs-api-masterclass-brad.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arigatopix/nodejs-api-masterclass-brad/issues"
+  },
+  "homepage": "https://github.com/arigatopix/nodejs-api-masterclass-brad#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
