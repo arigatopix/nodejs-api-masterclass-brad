@@ -7,12 +7,33 @@ const todos = [
 ];
 
 const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('X-Powered-By', 'NodeJS');
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+    'X-Powered-By': 'Node.JS'
+  });
+
+  // console.log(req.headers.authorization);
+
+  // Recieve data from client รับในรูป event (จะทำง่ายกว่าถ้าใช้ express)
+  let body = [];
+
+  req
+    .on('data', chunk => {
+      // รับข้อมูลแล้วใส่ใน array
+      body.push(chunk);
+    })
+    .on('end', () => {
+      // รวมข้อมูลใน array
+      body = Buffer.concat(body).toString();
+
+      // ถ้าไม่มี .toString จะได้ buffer
+      console.log(body);
+    });
 
   res.end(
     JSON.stringify({
-      success: true,
+      success: false,
+      error: null,
       data: todos
     })
   );
