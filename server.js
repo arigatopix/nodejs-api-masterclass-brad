@@ -59,6 +59,7 @@ const server = http.createServer((req, res) => {
         'X-Powered-By': 'Node.JS'
       });
 
+      // ส่งไปแสดงผลว่าสำเร็จ
       res.end(JSON.stringify(response));
     });
 });
