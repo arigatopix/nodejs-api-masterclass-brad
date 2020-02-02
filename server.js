@@ -1,10 +1,13 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const colors = require('colors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 
+// Colors command in console
+require('colors');
+
 // * Middlewares
+const errorHandler = require('./middlewares/error');
 
 // * Load env vars objects (โหลดจากไฟล์ไม่ได้ config ในไฟล์กำหนด path)
 dotenv.config({ path: './config/config.env' });
@@ -29,6 +32,9 @@ if (process.env.NODE_ENV === 'development') {
 // * Mount routers
 // app.use() คือการเรียกใช้ middleware function ซึ่งเป็นหนึ่งใน cycle ของ req,res มาเมื่อโดนเรียก next
 app.use('/api/v1/bootcamps', bootcamps);
+
+// * Error Handler middleware ใช้ json แสดงผลให้กับ client
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
