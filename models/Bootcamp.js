@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const BootcampSchema = new mongoose.Schema({
   name: {
@@ -97,6 +98,19 @@ const BootcampSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+});
+
+// * ต้องการกำหนด slug ให้กับ collection slug field โดยใช้ชื่อของ name (ของแต่ละ req ที่ create เข้ามา) มาแปลงเป็น slug
+// ใช้ Pre middleware
+// Pre middleware functions are executed one after another, when each middleware calls next.
+BootcampSchema.pre('save', function(next) {
+  // this.name คือ name ของ Schema นี้
+  // console.log(this.name);
+
+  // กำหนด slug field ให้ใช้ตัวพิมพ์เล็ของ this.name
+  this.slug = slugify(this.name, { lower: true });
+
+  next();
 });
 
 module.exports = mongoose.model('Bootcamp', BootcampSchema);
