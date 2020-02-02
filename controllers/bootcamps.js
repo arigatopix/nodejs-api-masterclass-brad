@@ -9,17 +9,34 @@ const Bootcamp = require('../models/Bootcamp');
 // @desc    Get all bootcamps
 // @route   GET /api/v1/bootcamps
 // @access  Public
-exports.getBootcamps = (req, res, next) => {
-  res.status(200).json({ success: true, msg: 'Show all bootcamps' });
+exports.getBootcamps = async (req, res, next) => {
+  try {
+    const bootcamps = await Bootcamp.find();
+
+    res.status(200).json({ success: true, data: bootcamps });
+  } catch (err) {
+    res.status(400).json({ success: false });
+  }
 };
 
 // @desc    Get Single bootcamp
 // @route   GET /api/v1/bootcamps/:id
 // @access  Public
-exports.getBootcamp = (req, res, next) => {
-  res
-    .status(200)
-    .json({ success: true, msg: `Show bootcamp id :${req.params.id}` });
+exports.getBootcamp = async (req, res, next) => {
+  try {
+    // รับ param มาจาก url
+    const bootcamp = await Bootcamp.findById(req.params.id);
+
+    // กรณีใช้ id ตรงกับ format ของ mongoDB แต่ไม่มี data มันจะแสดง status 200, data: null แก้ไขโดยใช้ if
+    if (!bootcamp) {
+      // ถ้าไม่มี bootcamp ใน DB
+      return res.status(400).json({ success: false });
+    }
+
+    res.status(200).json({ success: true, data: bootcamp });
+  } catch (err) {
+    res.status(400).json({ success: false });
+  }
 };
 
 // @desc    Create new bootcamp
