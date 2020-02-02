@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const geocoder = require('../utils/geocoder');
 
 const BootcampSchema = new mongoose.Schema({
   name: {
@@ -38,7 +39,7 @@ const BootcampSchema = new mongoose.Schema({
     required: [true, 'Please add an address']
   },
   location: {
-    // GeoJSON Point รับจาก modules อีกที https://mongoosejs.com/docs/geojson.html
+    // GeoJSON Point รับจาก geocoder อีกที https://mongoosejs.com/docs/geojson.html
     type: {
       type: String, // Don't do `{ location: { type: String } }`
       enum: ['Point'] // 'location.type' must be 'Point' อีกแบบคือ polygon
@@ -100,9 +101,10 @@ const BootcampSchema = new mongoose.Schema({
   }
 });
 
-// * ต้องการกำหนด slug ให้กับ collection slug field โดยใช้ชื่อของ name (ของแต่ละ req ที่ create เข้ามา) มาแปลงเป็น slug
-// ใช้ Pre middleware
+// * ใช้ Pre middleware
 // Pre middleware functions are executed one after another, when each middleware calls next.
+
+// * ต้องการกำหนด slug ให้กับ collection slug field โดยใช้ชื่อของ name (ของแต่ละ req ที่ create เข้ามา) มาแปลงเป็น slug
 BootcampSchema.pre('save', function(next) {
   // this.name คือ name ของ Schema นี้
   // console.log(this.name);
@@ -110,6 +112,29 @@ BootcampSchema.pre('save', function(next) {
   // กำหนด slug field ให้ใช้ตัวพิมพ์เล็ของ this.name
   this.slug = slugify(this.name, { lower: true });
 
+  next();
+});
+
+// * GEOCODER & Create location field
+BootcampSchema.pre('save', async function(next) {
+  const loc = await geocoder.geocode(this.address);
+  // ใช้ async await เพราะ fetch data (ดู document)
+  // เอา string จาก address field ไป process
+
+  // save document to collecttion
+  this.location = {
+    type: 'Point',
+    coordinates: [loc[0].longitude, loc[0].latitude], // loc[0] เพราะ geocoder return array
+    formattedAddress: loc[0].formattedAddress,
+    street: loc[0].streetName,
+    city: loc[0].city,
+    state: loc[0].stateCode,
+    zipcode: loc[0].zipcode,
+    country: loc[0].countryCode
+  };
+
+  // Do not save address (ที่ create เข้ามา) in DB เพราะเราจะใช้ formattedAddress แทน
+  this.address = undefined;
   next();
 });
 
