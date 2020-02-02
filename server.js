@@ -1,10 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const colors = require('colors');
 const connectDB = require('./config/db');
 
 // * Middlewares
-// ใช้ log method และ status
-const morgan = require('morgan');
 
 // * Load env vars objects (โหลดจากไฟล์ไม่ได้ config ในไฟล์กำหนด path)
 dotenv.config({ path: './config/config.env' });
@@ -19,9 +18,6 @@ const app = express();
 connectDB();
 
 // use middlewares
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
 
 // * Mount routers
 // app.use() คือการเรียกใช้ middleware function ซึ่งเป็นหนึ่งใน cycle ของ req,res มาเมื่อโดนเรียก next
@@ -32,13 +28,15 @@ const PORT = process.env.PORT || 5000;
 // กำหนด variable server
 const server = app.listen(
   PORT,
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+  console.log(
+    `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold
+  )
 );
 
 // * Global Handle unhandled promise rejections (กรณี database หรืออื่นๆ มีปัญหาให้แสดง msg)
 // จะใช้ try...cratch block ใน db.js ก็ได้
 process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`);
+  console.log(`Error: ${err.message}`.red);
   // Close server & exit process โดยตังเลข 1 ปิด server จาก code ผิดพลาด
   server.close(() => process.exit(1));
 });
