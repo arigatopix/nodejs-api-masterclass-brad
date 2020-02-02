@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const colors = require('colors');
+const morgan = require('morgan');
 const connectDB = require('./config/db');
 
 // * Middlewares
@@ -14,10 +15,16 @@ const bootcamps = require('./routes/bootcamps');
 // * Init Express
 const app = express();
 
+// * Body Parser เอาไว้รวมก้อน request จากย่อยๆ เป็นก้อนเดียวกัน
+app.use(express.json());
+
 // * Connect to database
 connectDB();
 
 // use middlewares
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // * Mount routers
 // app.use() คือการเรียกใช้ middleware function ซึ่งเป็นหนึ่งใน cycle ของ req,res มาเมื่อโดนเรียก next

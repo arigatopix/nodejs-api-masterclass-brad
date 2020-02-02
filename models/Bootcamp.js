@@ -44,7 +44,6 @@ const BootcampSchema = new mongoose.Schema({
     },
     coordinates: {
       type: [Number], // เป็น array ของ lat, long
-      required: true,
       index: '2dsphere'
     },
     formattedAddress: String,
@@ -59,7 +58,7 @@ const BootcampSchema = new mongoose.Schema({
     type: [String],
     required: true,
     enum: [
-      // enum คือจะมี list แค่นี้
+      // enum คือจะมี list แค่นี้ ถ้าส่งค่านอกเหนือจากนี้ error
       'Web Development',
       'Mobile Development',
       'UI/UX',

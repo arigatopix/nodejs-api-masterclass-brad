@@ -1,3 +1,6 @@
+// * Call Model
+const Bootcamp = require('../models/Bootcamp');
+
 // https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/routes
 // สร้างแต่ละ method เป็น function (middleware) และ export ไปใช้งาน
 // ใช้ route เดียวกัน แต่ต่าง method
@@ -22,8 +25,17 @@ exports.getBootcamp = (req, res, next) => {
 // @desc    Create new bootcamp
 // @route   POST /api/v1/bootcamps
 // @access  Private
-exports.createBootcamp = (req, res, next) => {
-  res.status(201).json({ success: true, msg: 'Create new bootcamp' });
+exports.createBootcamp = async (req, res, next) => {
+  try {
+    // รับ req.body ไปสร้าง document ใน collection database
+    // ถ้ามีข้อมูลมากกว่า Schema ที่เรากำหนดไว้ จะไม่ถูกบันทึกลงใน DB
+    const bootcamp = await Bootcamp.create(req.body);
+
+    res.status(201).json({ success: true, data: bootcamp });
+  } catch (err) {
+    // กรณี error แทนที่จะค้างไปเฉยๆ ให้ส่ง status และผลให้ user รู้'
+  }
+  res.status(400).json({ success: false });
 };
 
 // @desc    UPDATE bootcamp
