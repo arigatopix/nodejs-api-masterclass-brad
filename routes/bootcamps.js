@@ -9,8 +9,13 @@ const {
   getBootcamp,
   createBootcamp,
   updateBootcamp,
-  deleteBootcamp
+  deleteBootcamp,
+  getBootcampsInRadius
 } = require('../controllers/bootcamps');
+
+// หา bootcamps ในรัศมี (ระยะทาง) ที่กำหนด
+// api/v1/bootcamps/radius/:zipcode/:distance
+router.route('/radius/:zipcode/:distance').get(getBootcampsInRadius);
 
 // เมื่อ request เข้ามาที่ /api/v1/bootcamps โดยใช้ function ของ route
 router

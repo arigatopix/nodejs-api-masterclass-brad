@@ -4,6 +4,8 @@ const ErrorResponse = require('../utils/errorResponse');
 const Bootcamp = require('../models/Bootcamp');
 // * asyncHandler เอาไว้ลดรูป try...catch block
 const asyncHandler = require('../middlewares/async');
+// * geocoder แปลง zipcode เป็น lat,long
+const geocoder = require('../utils/geocoder');
 
 // https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/routes
 // สร้างแต่ละ method เป็น function (middleware) และ export ไปใช้งาน
@@ -82,4 +84,36 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ success: true, data: {} });
+});
+
+// @desc    GET bootcamps within a radius มีข้อมูล lat, long และใส่รัศมีการค้นหา
+// @route   GET /api/v1/bootcamps/radius/:zipcode/:distance
+// @access  Private
+// รับค่า zipcode > แปลงเป็น lat,long (geoCoder) หรือจะเอา lat, long โดยตรงก็ได้ อยุ่ที่จะ design
+exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
+  const { zipcode, distance } = req.params;
+
+  // Get lat, long from geocoder
+  const loc = await geocoder.geocode(zipcode);
+  const lat = loc[0].latitude;
+  const lng = loc[0].longitude;
+
+  // Cal รัศมีการค้นหา (radius) โดยใช้รัศมีของโลกเป็นฐาน
+  // radius = distance / radius of Earth
+  // Earth radius = 3,963 mi หรือ 6,371 km
+  const radius = distance / 3963;
+  // ใช้หน่วย mile ถ้าเศษส่วนเป็น 1 คือมีรัศมีการค้นหาทั้งโลก จากพิกัด lat, long
+
+  // * find location in distance เป็น funciton ของ mongoDB
+  // https://docs.mongodb.com/manual/reference/operator/query/centerSphere/
+  // * If specifying latitude and longitude coordinates, list the longitude first (x) and then latitude(y) *
+  const bootcamps = await Bootcamp.find({
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+  });
+
+  res.status(200).json({
+    success: true,
+    count: bootcamps.length,
+    data: bootcamps
+  });
 });
