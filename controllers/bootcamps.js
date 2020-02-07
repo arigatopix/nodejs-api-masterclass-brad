@@ -17,7 +17,23 @@ const geocoder = require('../utils/geocoder');
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
   // ! อย่าลืม async await
-  const bootcamps = await Bootcamp.find();
+  // รับ query string เช่น ?location.city=Boston&jobGuarantee=true&averageCost[gt]=100
+  // ได้ object { location.city : "Boston", jobGuarantee: "true", averageCost: { "gt": 100 } }
+  let query;
+
+  // stringify แปลงจาก json to string
+  let queryStr = JSON.stringify(req.query);
+
+  // แปลงจากข้อความเช่น gt (greater than), lte ให้เป็น query แบบ mongoDB คือ $gt, $lte
+  // https://docs.mongodb.com/manual/reference/operator/query/gt/
+  // * replace(word, ทำเป็น function ได้ด้วย สุดยอด)
+  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+  // \b คือจะหาคำเริ่มต้น g และตัวลงท้ายด้วยตัว t เท่านั้น และ | คือ or ใน Regular Ex.
+
+  // แปลงกลับเป็น json แล้วเอาไปใช้กับ .find() ของ mongoDB
+  query = JSON.parse(queryStr);
+
+  const bootcamps = await Bootcamp.find(query);
   res
     .status(200)
     .json({ success: true, count: bootcamps.length, data: bootcamps });
