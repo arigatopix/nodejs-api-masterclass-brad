@@ -16,24 +16,60 @@ const geocoder = require('../utils/geocoder');
 // @route   GET /api/v1/bootcamps
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  // ! อย่าลืม async await
-  // รับ query string เช่น ?location.city=Boston&jobGuarantee=true&averageCost[gt]=100
-  // ได้ object { location.city : "Boston", jobGuarantee: "true", averageCost: { "gt": 100 } }
+  // รับ query string เช่น ?location.city=Boston&jobGuarantee=true&averageCost[gt]=100&select=name
+  // ได้ object { location.city : "Boston", jobGuarantee: "true", averageCost: { "gt": 100 }, select:"name" }
+  // { select: "name" } ไม่ใช่ข้อมูลใน DB เราจะตัด query นี้ออกตรง removeFields
   let query;
 
-  // stringify แปลงจาก json to string
-  let queryStr = JSON.stringify(req.query);
+  // Copy req.query object
+  const reqQuery = { ...req.query };
 
-  // แปลงจากข้อความเช่น gt (greater than), lte ให้เป็น query แบบ mongoDB คือ $gt, $lte
+  // * Field to exclude query (เช่น เมื่อเราเลือก ?select=name,housing&housing=false)
+  // ตรง fields ?select, ?sort มันไม่มีใน Database เลยตัด query นี้ออกจากการค้นหา .find(...)
+  const removeFields = ['select', 'sort'];
+
+  // Loop over removeFields and delete object ที่มี key ตาม select=name,housing หรือ sort=-1
+  removeFields.forEach(param => delete reqQuery[param]);
+
+  // * Create query string
+  // stringify แปลงจาก json to string
+  let queryStr = JSON.stringify(reqQuery);
+
+  // * แปลงจากข้อความเช่น gt (greater than), lte ให้เป็น query แบบ mongoDB คือ $gt, $lte
   // https://docs.mongodb.com/manual/reference/operator/query/gt/
   // * replace(word, ทำเป็น function ได้ด้วย สุดยอด)
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
   // \b คือจะหาคำเริ่มต้น g และตัวลงท้ายด้วยตัว t เท่านั้น และ | คือ or ใน Regular Ex.
 
   // แปลงกลับเป็น json แล้วเอาไปใช้กับ .find() ของ mongoDB
-  query = JSON.parse(queryStr);
+  query = Bootcamp.find(JSON.parse(queryStr));
 
-  const bootcamps = await Bootcamp.find(query);
+  // * Select Field เอา query "?select" มาใช้งาน เพื่อเลือกแสดงข้อมูล
+  // ใช้ร่วมกับ .select() method ของ mongoose
+  // https://mongoosejs.com/docs/queries.html
+  if (req.query.select) {
+    // ถ้ามี select query
+
+    // * เอา fields ไปใช้ค้นหาใน mongoDB
+    // ex: query.select('name occupation');
+    const fields = req.query.select.split(',').join(' ');
+
+    // select เป็น method ของ mongoose ใช้เพื่อเลือกข้อมูลมาแสดงรึไม่
+    query = query.select(fields);
+  }
+
+  // * Sort by (เอา ?sort มาใช้งานกับ mongoose)
+  if (req.query.sort) {
+    // ex: ?sort=name คือเรียงตาม field name
+    const sortBy = req.query.sort.split(',').join(' ');
+
+    query = query.sort(sortBy);
+    // sort ตรงนี้เป็น method ของ mongoose
+  } else {
+    query = query.sort('-createAt');
+  }
+
+  const bootcamps = await query;
   res
     .status(200)
     .json({ success: true, count: bootcamps.length, data: bootcamps });
