@@ -16,17 +16,17 @@ const geocoder = require('../utils/geocoder');
 // @route   GET /api/v1/bootcamps
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
+  let query;
   // รับ query string เช่น ?location.city=Boston&jobGuarantee=true&averageCost[gt]=100&select=name
   // ได้ object { location.city : "Boston", jobGuarantee: "true", averageCost: { "gt": 100 }, select:"name" }
   // { select: "name" } ไม่ใช่ข้อมูลใน DB เราจะตัด query นี้ออกตรง removeFields
-  let query;
 
   // Copy req.query object
   const reqQuery = { ...req.query };
 
   // * Field to exclude query (เช่น เมื่อเราเลือก ?select=name,housing&housing=false)
   // ตรง fields ?select, ?sort มันไม่มีใน Database เลยตัด query นี้ออกจากการค้นหา .find(...)
-  const removeFields = ['select', 'sort'];
+  const removeFields = ['select', 'sort', 'page', 'limit'];
 
   // Loop over removeFields and delete object ที่มี key ตาม select=name,housing หรือ sort=-1
   removeFields.forEach(param => delete reqQuery[param]);
@@ -69,10 +69,49 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     query = query.sort('-createAt');
   }
 
+  // * Pagination and Limit query (by mongoose)
+  const page = parseInt(req.query.page, 10) || 1;
+  // รับค่าแปลงเป็นจำนวนเต็มฐานสิบ และตั้ง page default = 1
+  const limit = parseInt(req.query.limit, 10) || 25;
+  // .limit() method คือจำนวนข้อมูลที่จะ return
+  const startIndex = (page - 1) * limit;
+  // ใช้คู่กับ skip() ข้อมูลลำดับ 0 ถึง limit หน้าสอง ข้อมูลอันที่ 10 ขึ้นไปเป็นต้น (หาก limit = 10)
+  // skip() คือจำนวนข้อมูลที่ "ไม่แสดง" หน้าแรก
+  const endIndex = page * limit;
+  // endIndex คือข้อมูลตัวสุดท้าย
+  const total = await Bootcamp.countDocuments(reqQuery);
+  // countDocuments() คือนับข้อมูลทั้งหมดใน collection ไม่สน index (ช้า)
+  // เพิ่ม (reqQuery) เข้าไป (ค้นหา index) เวลาคำนวน page.next, page.prev จะเอา query ที่เราต้องการแสดงมานับเท่านั้น
+
+  // Pagination object send to client
+  const pagination = {};
+
+  if (endIndex < total) {
+    // ข้อมูลตัวสุดท้ายน้อยกว่าจำนวนข้อมูลทั้งหมดใน Collection มีหน้าถัดไป
+    pagination.next = {
+      page: page + 1,
+      limit
+    };
+  }
+
+  if (startIndex > 0) {
+    // ข้อมูลที่ไม่ใช่ page 1 (เพราะ startIndex = 0) แสดง previous
+    pagination.prev = {
+      page: page - 1,
+      limit
+    };
+  }
+
+  query = query.skip(startIndex).limit(limit);
+
+  // * Execution Query
   const bootcamps = await query;
-  res
-    .status(200)
-    .json({ success: true, count: bootcamps.length, data: bootcamps });
+  res.status(200).json({
+    success: true,
+    count: bootcamps.length,
+    pagination,
+    data: bootcamps
+  });
 });
 
 // @desc    Get Single bootcamp
