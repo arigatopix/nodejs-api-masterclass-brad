@@ -16,7 +16,12 @@ exports.getCourses = asyncHandler(async (req, res, next) => {
     // note: รับ bootcampId จาก bootcamp router > courses router > course controllers
   } else {
     // get all courses
-    query = Course.find();
+    query = Course.find().populate({
+      // poppulate() คือแสดงผลของ collection ที่เกี่ยวข้องกับ courses
+      // https://mongoosejs.com/docs/tutorials/virtuals.html
+      path: 'bootcamp', // แสดง field ใน bootcamp แทน bootcampId
+      select: 'name description' // แสดงผลบาง fields
+    });
   }
 
   const courses = await query;

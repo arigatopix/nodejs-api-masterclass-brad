@@ -41,8 +41,8 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
   // \b คือจะหาคำเริ่มต้น g และตัวลงท้ายด้วยตัว t เท่านั้น และ | คือ or ใน Regular Ex.
 
-  // แปลงกลับเป็น json แล้วเอาไปใช้กับ .find() ของ mongoDB
-  query = Bootcamp.find(JSON.parse(queryStr));
+  // * หาข้อมูล query params แปลงกลับเป็น json แล้วเอาไปใช้กับ .find() ของ mongoDB
+  query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
 
   // * Select Field เอา query "?select" มาใช้งาน เพื่อเลือกแสดงข้อมูล
   // ใช้ร่วมกับ .select() method ของ mongoose
@@ -165,7 +165,9 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/bootcamps/:id
 // @access  Private
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
+  // ตอนแรกใช้ findByIdAndDelete() จะลบเฉพาะ bootcamp field แต่ไม่ลบ courses
+  // ต้องใช้ .remove() เพื่อ trigger middleware ใน Bootcamp models แล้วจะลบ courses field
 
   if (!bootcamp) {
     // ถ้าไม่มี bootcamp ใน DB
@@ -173,6 +175,9 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
       new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
     );
   }
+
+  // REMOVE BOOTCAMP AND COURSES
+  bootcamp.remove();
 
   res.status(200).json({ success: true, data: {} });
 });
