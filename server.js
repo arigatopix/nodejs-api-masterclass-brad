@@ -14,6 +14,7 @@ dotenv.config({ path: './config/config.env' });
 
 // * Route File ของ Stephen จะกำหนด require ที่ Mount routers เลย
 const bootcamps = require('./routes/bootcamps');
+const courses = require('./routes/courses');
 
 // * Init Express
 const app = express();
@@ -32,6 +33,7 @@ if (process.env.NODE_ENV === 'development') {
 // * Mount routers
 // app.use() คือการเรียกใช้ middleware function ซึ่งเป็นหนึ่งใน cycle ของ req,res มาเมื่อโดนเรียก next
 app.use('/api/v1/bootcamps', bootcamps);
+app.use('/api/v1/courses', courses);
 
 // * Error Handler middleware ใช้ json แสดงผลให้กับ client
 app.use(errorHandler);
