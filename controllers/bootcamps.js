@@ -119,7 +119,10 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 // @access  Public
 exports.getBootcamp = asyncHandler(async (req, res, next) => {
   // รับ param มาจาก url
-  const bootcamp = await Bootcamp.findById(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id).populate({
+    path: 'courses',
+    select: 'name description'
+  });
 
   // กรณีใช้ id ตรงกับ format ของ mongoDB แต่ไม่มี data มันจะแสดง status 200, data: null แก้ไขโดยใช้ if
   if (!bootcamp) {
