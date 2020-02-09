@@ -1,6 +1,8 @@
+const path = require('path');
 const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
+const fileupload = require('express-fileupload');
 const connectDB = require('./config/db');
 
 // Colors command in console
@@ -29,6 +31,13 @@ connectDB();
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Upload photo
+//www.npmjs.com/package/express-fileupload
+https: app.use(fileupload());
+
+// Set Static folder เข้ามาดูรูปผ่าน browser ได้
+app.use(express.static(path.join(__dirname, 'public')));
 
 // * Mount routers
 // app.use() คือการเรียกใช้ middleware function ซึ่งเป็นหนึ่งใน cycle ของ req,res มาเมื่อโดนเรียก next

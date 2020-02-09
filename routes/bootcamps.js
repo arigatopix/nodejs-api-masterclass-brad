@@ -17,7 +17,8 @@ const {
   createBootcamp,
   updateBootcamp,
   deleteBootcamp,
-  getBootcampsInRadius
+  getBootcampsInRadius,
+  bootcampPhotoUpload
 } = require('../controllers/bootcamps');
 
 // หา bootcamps ในรัศมี (ระยะทาง) ที่กำหนด
@@ -37,5 +38,8 @@ router
   .get(getBootcamp)
   .put(updateBootcamp)
   .delete(deleteBootcamp);
+
+// upload photo
+router.route('/:id/photo').put(bootcampPhotoUpload);
 
 module.exports = router;

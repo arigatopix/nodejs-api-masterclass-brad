@@ -40,8 +40,6 @@ const CourseSchema = new mongoose.Schema({
 // *Statics *s* คือใช้ method กับ Schema model ได้โดยตรง
 // method ต้องเรียก query ก่อนแล้วใช้งาน method (เช่นใน controllers)
 CourseSchema.statics.getAverageCost = async function(bootcampId) {
-  console.log('Calculating average cost...'.blue);
-
   // db.collection.aggregate() method
   // https://docs.mongodb.com/manual/reference/method/db.collection.aggregate/#group-by-and-calculate-a-sum
 
@@ -64,7 +62,6 @@ CourseSchema.statics.getAverageCost = async function(bootcampId) {
     await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
       averageCost: Math.ceil(obj[0].averageCost / 10) * 10 // หารก่อนแล้วปัดขึ้นให้เป็น จน. เต็ม
     });
-    console.log(Math.ceil(obj[0].averageCost / 10) * 10);
   } catch (err) {
     console.error(err);
   }
