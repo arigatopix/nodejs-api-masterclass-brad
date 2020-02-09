@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
+// * USE middleware for advanceResults query
+const advanceResults = require('../middlewares/advancedResults');
+const Course = require('../models/Course');
+
 // ! function Router()
 // mergeParams: true คือเอา resource :bootcampId มาจาก bootcamps route
 
@@ -14,7 +18,14 @@ const {
 // Get all courses
 router
   .route('/')
-  .get(getCourses)
+  .get(
+    advanceResults(Course, {
+      // implement advanced filter
+      path: 'bootcamp', // แสดง field ใน bootcamp แทน bootcampId
+      select: 'name description' // แสดงผลบาง fields
+    }),
+    getCourses
+  )
   .post(addCourse); // รับ /:bootcampId จาก bootcamps route
 
 // Get Single course

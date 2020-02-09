@@ -8,30 +8,19 @@ const Bootcamp = require('../models/Bootcamp');
 // @route   GET /api/v1/bootcamps/:bootcampId/courses
 // @access  Public
 exports.getCourses = asyncHandler(async (req, res, next) => {
-  let query;
-
   if (req.params.bootcampId) {
-    // ถ้ากดเข้าที่ bootcamps แสดง courses ที่อยู่ในนั้น
-    // ! อย่าลืม จะต้องหาแบบ object bootcamp = bootcampId
-    query = Course.find({ bootcamp: req.params.bootcampId });
+    const courses = await Course.find({ bootcamp: req.params.bootcampId });
     // note: รับ bootcampId จาก bootcamp router > courses router > course controllers
-  } else {
-    // get all courses
-    query = Course.find().populate({
-      // poppulate() คือแสดงผลของ collection ที่เกี่ยวข้องกับ courses
-      // https://mongoosejs.com/docs/tutorials/virtuals.html
-      path: 'bootcamp', // แสดง field ใน bootcamp แทน bootcampId
-      select: 'name description' // แสดงผลบาง fields
+
+    return res.status(200).json({
+      success: true,
+      count: courses.length,
+      data: courses
     });
+  } else {
+    // get all courses by advanceResultes middleware
+    res.status(200).json(res.advancedResults);
   }
-
-  const courses = await query;
-
-  res.status(200).json({
-    success: true,
-    count: courses.length,
-    data: courses
-  });
 });
 
 // @desc    Get single course
