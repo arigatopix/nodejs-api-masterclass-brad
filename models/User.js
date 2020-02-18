@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -47,5 +48,20 @@ UserSchema.pre('save', async function(next) {
 
   next();
 });
+
+// *Sign JWT and return
+UserSchema.methods.getSignedJwtToken = function() {
+  // methods คือเราจะเรียกใช้ใน controllers ต้อง query ข้อมูลก่อน
+  // statics คือ acces ใน Schema ได้โดยตรง และคำนวณในไฟล์ Schema
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE
+  });
+};
+
+// *Match user entered password to hashed password in database ใช้ compare text ที่เข้ามากับ db
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+  // this.password คือ user ปัจจุบันที่ query ออกมาใน controllers/auth.js
+};
 
 module.exports = mongoose.model('User', UserSchema);
