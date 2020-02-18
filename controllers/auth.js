@@ -17,11 +17,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   // ไม่มี Validate เพราะว่าใช้ Models ในการเช็ค
 
-  // Create token : อ้าง methods ใน UserSchema
-  // ใช้ตัว user ตัวเล็กเพราะเรียกจาก methods จะเอา user จากการสร้างขึ้นมา ณ ตอนนี้
-  const token = user.getSignedJwtToken();
-
-  res.status(200).json({ success: true, token });
+  sendTokenResponse(user, 200, res);
 });
 
 // @desc    Login User
@@ -51,8 +47,35 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Password is not match', 401));
   }
 
+  // send cookie, token and response to client with helper function
+  sendTokenResponse(user, 200, res);
+});
+
+// Get token from models, create cookie and send response [Helper function]
+const sendTokenResponse = (user, statusCode, res) => {
+  // จะส่ง cookie กลับไปให้ client พร้อมกับข้อมูล response object
+  // helper function รับ user, statusCode, res object
+
   // create token
   const token = user.getSignedJwtToken();
 
-  res.status(200).json({ success: true, token });
-});
+  const options = {
+    // https://www.npmjs.com/package/cookie
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ), // หน่วย ms กรณีใช้  maxAge: 30 * 24 * 60 * 60 * 1000,
+    httpOnly: true
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.sucure = true;
+  }
+
+  res
+    .status(statusCode)
+    .cookie('token', token, options) // key ที่แสดงใน browser, value, options
+    .json({
+      success: true,
+      token
+    });
+};

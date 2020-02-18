@@ -3,6 +3,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const fileupload = require('express-fileupload');
+const cookiePaser = require('cookie-parser');
 const connectDB = require('./config/db');
 
 // Colors command in console
@@ -36,6 +37,9 @@ if (process.env.NODE_ENV === 'development') {
 // Upload photo
 //www.npmjs.com/package/express-fileupload
 https: app.use(fileupload());
+
+// Cookie paser ส่ง cookie เก็บใน browser safe กว่า local storage
+app.use(cookiePaser());
 
 // Set Static folder เข้ามาดูรูปผ่าน browser ได้
 app.use(express.static(path.join(__dirname, 'public')));
