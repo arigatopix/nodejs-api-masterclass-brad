@@ -72,10 +72,7 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/bootcamps/:id
 // @access  Private
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true, // คือ return new object into database
-    runValidators: true // หลังอัพเดทให้เช็คว่าถูก type มั้ย
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     // ถ้าไม่มี bootcamp ใน DB
@@ -83,6 +80,22 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
       new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
     );
   }
+
+  // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
+  // ต้องแปลงเป็น toString() เพราะมันเป็น object จาก DB
+  if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorized to update this bootcamp`,
+        401
+      )
+    );
+  }
+
+  bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+    new: true, // คือ return new object into database
+    runValidators: true // หลังอัพเดทให้เช็คว่าถูก type มั้ย
+  });
 
   res.status(200).json({ success: true, data: bootcamp });
 });
@@ -102,7 +115,17 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // REMOVE BOOTCAMP AND COURSES
+  // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
+  if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorized to delete this bootcamp`,
+        401
+      )
+    );
+  }
+
+  //! REMOVE BOOTCAMP AND COURSES
   bootcamp.remove();
 
   res.status(200).json({ success: true, data: {} });
@@ -144,11 +167,21 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/bootcamps/:id/photo
 // @access  Private
 exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     return next(
       new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
+  if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorized to upload photo this bootcamp`,
+        401
+      )
     );
   }
 
