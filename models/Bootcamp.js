@@ -96,9 +96,19 @@ const BootcampSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    createdAt: {
+    createAt: {
+      type: Date,
+      default: Date.now,
+      immutable: true // กรณี update ข้อมูล เวลาจะถูก fixed เหมือนเดิม
+    },
+    updateAt: {
       type: Date,
       default: Date.now
+    },
+    user: {
+      type: mongoose.Schema.ObjectId, // ralate User models
+      ref: 'User',
+      required: true
     }
   },
   {

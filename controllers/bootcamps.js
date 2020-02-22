@@ -46,6 +46,22 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/bootcamps
 // @access  Private
 exports.createBootcamp = asyncHandler(async (req, res, next) => {
+  // Add user จาก req.headers (auth) ให้กับ req.body
+  req.body.user = req.user.id;
+
+  // Check for published bootcamp
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id });
+
+  // กำหนด publisher สร้างได้แค่ 1 bootcamp || admin ได้มากกว่านั้น
+  if (publishedBootcamp && req.user.role !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `The user with ID ${req.user.id} has already published a bootcamp`
+      ),
+      400
+    );
+  }
+
   // รับ req.body ไปสร้าง document ใน collection database
   // ถ้ามีข้อมูลมากกว่า Schema ที่เรากำหนดไว้ จะไม่ถูกบันทึกลงใน DB
   const bootcamp = await Bootcamp.create(req.body);
