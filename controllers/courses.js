@@ -53,6 +53,9 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
   // req.body.bootcamp คือ object ที่จะ POST ไปให้ DB
   req.body.bootcamp = req.params.bootcampId;
 
+  // assign user ให้ body ข้อมูลจาก headers
+  req.body.user = req.user.id;
+
   // * find bootcamp in database เพราะต้อง relate กัน
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
   // if not found bootcamp in DB
@@ -60,6 +63,16 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
     return next(
       new ErrorResponse(`No bootcamp with the id of ${req.params.bootcampId}`),
       404
+    );
+  }
+
+  // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
+  if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.user.id} is not authorized to add a course to bootcamp ${bootcamp._id}`,
+        401
+      )
     );
   }
 
@@ -87,6 +100,16 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
+  if (course.user.toString() !== req.user.id && req.user.id !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.user.id} is not authorized to update course ${course._id}`,
+        401
+      )
+    );
+  }
+
   // Update course by id
   course = await Course.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -110,6 +133,16 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
     return next(
       new ErrorResponse(`No course with the id of ${req.params.id}`),
       404
+    );
+  }
+
+  // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
+  if (course.user.toString() !== req.user.id && req.user.id !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.user.id} is not authorized to delete course ${course._id}`,
+        401
+      )
     );
   }
 

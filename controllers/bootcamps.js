@@ -56,7 +56,7 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
   if (publishedBootcamp && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
-        `The user with ID ${req.user.id} has already published a bootcamp`
+        `The user with ID ${req.user.id} has already published a bootcamp` // req.user.id มาจาก headers
       ),
       400
     );
@@ -86,7 +86,7 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
   if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
     return next(
       new ErrorResponse(
-        `User ${req.params.id} is not authorized to update this bootcamp`,
+        `User ${req.user.id} is not authorized to update this bootcamp`,
         401
       )
     );
@@ -119,7 +119,7 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
     return next(
       new ErrorResponse(
-        `User ${req.params.id} is not authorized to delete this bootcamp`,
+        `User ${req.user.id} is not authorized to delete this bootcamp`,
         401
       )
     );
@@ -179,7 +179,7 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
     return next(
       new ErrorResponse(
-        `User ${req.params.id} is not authorized to upload photo this bootcamp`,
+        `User ${req.user.id} is not authorized to upload photo this bootcamp`,
         401
       )
     );
