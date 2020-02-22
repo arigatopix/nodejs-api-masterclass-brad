@@ -79,7 +79,8 @@ UserSchema.methods.getResetPasswordToken = function() {
     .digest('hex');
 
   // Set Expire 10 min
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  this.resetPasswordExpire =
+    Date.now() + process.env.RESET_PASSWORD_EXPIRE * 60 * 1000;
 
   // 3) ส่ง resetToken ไปสร้าง url และนำกลับมา hash เช็คกับ field resetPasswordToken ใน DB
   return resetToken;
