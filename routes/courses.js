@@ -7,6 +7,9 @@ const Course = require('../models/Course');
 // ! function Router()
 // mergeParams: true คือเอา resource :bootcampId มาจาก bootcamps route
 
+// protect route with token
+const { protect } = require('../middlewares/auth');
+
 const {
   getCourse,
   getCourses,
@@ -26,14 +29,14 @@ router
     }),
     getCourses
   )
-  .post(addCourse); // รับ /:bootcampId จาก bootcamps route
+  .post(protect, addCourse); // รับ /:bootcampId จาก bootcamps route
 
 // Get Single course
 router
   .route('/:id')
   .get(getCourse)
-  .put(updateCourse)
-  .delete(deleteCourse);
+  .put(protect, updateCourse)
+  .delete(protect, deleteCourse);
 
 // ! อย่าลืม export ไปใช้งานใน routes
 module.exports = router;

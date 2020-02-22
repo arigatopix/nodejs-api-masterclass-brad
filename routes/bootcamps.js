@@ -6,6 +6,9 @@ const courseRouter = require('./courses');
 // * function ของ express
 const router = express.Router();
 
+// protect route with token
+const { protect } = require('../middlewares/auth');
+
 // *Re-Route into other resource routers ส่ง :bootcampId ไปด้วย (อย่าลืม set mergeParams ที่ Router ของ courses)
 // Router middleware
 router.use('/:bootcampId/courses', courseRouter);
@@ -33,17 +36,17 @@ router.route('/radius/:zipcode/:distance').get(getBootcampsInRadius);
 router
   .route('/')
   .get(AdvancedResults(Bootcamp, 'courses'), getBootcamps) // ใช้ handler middleware ได้หลายๆ อัน
-  .post(createBootcamp);
+  .post(protect, createBootcamp);
 
 // เมื่อ request เข้ามาที่ /api/v1/bootcamps/:id (get single, put, delete)
 // ระวังสลับ /:id
 router
   .route('/:id')
   .get(getBootcamp)
-  .put(updateBootcamp)
-  .delete(deleteBootcamp);
+  .put(protect, updateBootcamp)
+  .delete(protect, deleteBootcamp);
 
 // upload photo
-router.route('/:id/photo').put(bootcampPhotoUpload);
+router.route('/:id/photo').put(protect, bootcampPhotoUpload);
 
 module.exports = router;
