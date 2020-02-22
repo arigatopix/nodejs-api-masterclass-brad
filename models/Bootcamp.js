@@ -98,11 +98,6 @@ const BootcampSchema = new mongoose.Schema(
     },
     createAt: {
       type: Date,
-      default: Date.now,
-      immutable: true // กรณี update ข้อมูล เวลาจะถูก fixed เหมือนเดิม
-    },
-    updateAt: {
-      type: Date,
       default: Date.now
     },
     user: {

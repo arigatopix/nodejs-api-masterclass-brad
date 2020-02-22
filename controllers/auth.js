@@ -89,3 +89,27 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ success: true, data: user });
 });
+
+// @desc    Forgot password
+// @route   POST /api/v1/auth/forgotpassword
+// @access  Public
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new ErrorResponse(`There is no user with thai email`, 404));
+  }
+
+  // * Get reset TOKEN from models
+  // สร้าง token พร้อมกับส่ง token ไปที่ email ของ user (ไปแบบ url) เก็บ token และเวลาหมดอายุ
+  // เอา token มาค้นหาใน field "resetPasswordToken" เพื่อยืนยันว่ามาจาก email เจ้าของจริงๆ
+  // ให้สร้าง password ใหม่ คล้ายๆ register
+  const resetToken = user.getResetPasswordToken();
+
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});
