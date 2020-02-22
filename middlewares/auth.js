@@ -40,3 +40,21 @@ exports.protect = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Not authorize to access this route', 401));
   }
 });
+
+// Grant access to specific roles กำหนด roles ให้แต่ละ routes
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      // req.user.role ไม่อยู่ใน roles ที่กำหนดให้กับ routes
+      return next(
+        new ErrorResponse(
+          `User role ${req.user.role} is not authorized to access this route`
+        ),
+        403
+      );
+    }
+
+    // อย่าลืมใส่ next
+    next();
+  };
+};
