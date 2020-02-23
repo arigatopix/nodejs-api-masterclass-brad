@@ -2,6 +2,7 @@ const express = require('express');
 
 // Include other resourse routers เมื่อค้นหา courses ผ่าน bootcamps ให้ re-direct ด้วย middleware
 const courseRouter = require('./courses');
+const reviewRouter = require('./reviews');
 
 // * function ของ express
 const router = express.Router();
@@ -14,6 +15,7 @@ const { protect, authorize } = require('../middlewares/auth');
 // *Re-Route into other resource routers ส่ง :bootcampId ไปด้วย (อย่าลืม set mergeParams ที่ Router ของ courses)
 // Router middleware
 router.use('/:bootcampId/courses', courseRouter);
+router.use('/:bootcampId/reviews', reviewRouter);
 
 // กำหนด routes ของ bootcamps จาก controllers code clean มากขึ้น
 const {
