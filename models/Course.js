@@ -64,10 +64,13 @@ CourseSchema.statics.getAverageCost = async function(bootcampId) {
   console.log(obj);
   // Send to database
   try {
-    await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
-      averageCost: obj.length > 0 ? Math.ceil(obj[0].averageCost / 10) * 10 : 0
-      // * ถ้าไม่มี obj ให้ default = 0
-    });
+    await this.model('Bootcamp').findByIdAndUpdate(
+      bootcampId,
+      obj[0]
+        ? // เช็คว่ามีข้อมูลมั้ย ป้องกัน mongoose undefiend
+          { averageCost: Math.ceil(obj[0].averageCost / 10) * 10 }
+        : { averageCost: undefined }
+    );
   } catch (err) {
     console.error(err);
   }

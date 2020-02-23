@@ -58,10 +58,14 @@ ReviewSchema.statics.getAverageRating = async function(bootcampId) {
 
   // Send to database
   try {
-    await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
-      averageRating: obj.length > 0 ? obj[0].averageRating : 0
-      // * ถ้าไม่มี obj ให้ default = 0
-    });
+    await this.model('Bootcamp').findByIdAndUpdate(
+      bootcampId,
+      // เช็คว่ามีข้อมูลมั้ย ป้องกัน mongoose undefiend
+      obj[0]
+        ? { averageRating: obj[0].averageRating }
+        : { averageRating: undefined }
+    );
+    console.log(obj);
   } catch (err) {
     console.error(err);
   }
