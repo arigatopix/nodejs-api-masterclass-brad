@@ -8,7 +8,13 @@ const Review = require('../models/Review');
 const { protect, authorize } = require('../middlewares/auth');
 const advanceResults = require('../middlewares/advancedResults');
 
-const { getReviews, getReview, addReview } = require('../controllers/reviews');
+const {
+  getReviews,
+  getReview,
+  addReview,
+  updateReview,
+  deleteReview
+} = require('../controllers/reviews');
 
 router
   .route('/')
@@ -21,6 +27,10 @@ router
   )
   .post(protect, authorize('user', 'admin'), addReview);
 
-router.route('/:id').get(getReview);
+router
+  .route('/:id')
+  .get(getReview)
+  .put(protect, authorize('user', 'admin'), updateReview)
+  .delete(protect, authorize('user', 'admin'), deleteReview);
 
 module.exports = router;

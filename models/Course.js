@@ -61,11 +61,12 @@ CourseSchema.statics.getAverageCost = async function(bootcampId) {
     }
   ]);
 
+  console.log(obj);
   // Send to database
   try {
-    // * เรียก Bootcamp Schema จาก Course Schema *
     await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
-      averageCost: Math.ceil(obj[0].averageCost / 10) * 10 // หารก่อนแล้วปัดขึ้นให้เป็น จน. เต็ม
+      averageCost: obj.length > 0 ? Math.ceil(obj[0].averageCost / 10) * 10 : 0
+      // * ถ้าไม่มี obj ให้ default = 0
     });
   } catch (err) {
     console.error(err);
@@ -82,7 +83,6 @@ CourseSchema.post('save', function() {
 // Call getAverageCost before remove: ถ้า course ลบแล้ว ให้คำนวน AverageCost อีกรอบ
 CourseSchema.pre('remove', function() {
   this.constructor.getAverageCost(this.bootcamp);
-  // ! ถ้าไม่มี course จะ crash
 });
 
 module.exports = mongoose.model('Course', CourseSchema);

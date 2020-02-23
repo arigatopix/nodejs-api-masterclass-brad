@@ -67,7 +67,7 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
   }
 
   // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
-  if (bootcamp.user.toString() !== req.user.id && req.user.id !== 'admin') {
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to add a course to bootcamp ${bootcamp._id}`,
@@ -101,7 +101,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
   }
 
   // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
-  if (course.user.toString() !== req.user.id && req.user.id !== 'admin') {
+  if (course.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to update course ${course._id}`,
@@ -137,7 +137,7 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
   }
 
   // * Make sure user is bootcamp owner คือเอา user จาก DB มาเชคกับ header (req.user.id)
-  if (course.user.toString() !== req.user.id && req.user.id !== 'admin') {
+  if (course.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
         `User ${req.user.id} is not authorized to delete course ${course._id}`,

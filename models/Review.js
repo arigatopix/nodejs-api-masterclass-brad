@@ -40,15 +40,16 @@ ReviewSchema.index({ bootcamp: 1, user: 1 }, { unique: true });
 // * Average Bootcamp Rating by aggregate(การสรุป)
 // Group bootcamp ใน review แล้วทำการ average Rating แล้ว save ใน BootcampSchema
 // Statics คือ จะไม่เรียกใช้ใน controllers เลย ให้มันจบที่ Models
+// aggregate เหมือน SQL พวก query สามารถสร้าง field ใหม่ขึ้นมา จากการสรุป (group by) เป็นต้น
+// https://devahoy.com/blog/2016/06/mongodb-aggregation-example/
 ReviewSchema.statics.getAverageRating = async function(bootcampId) {
   const obj = await this.aggregate([
-    // aggregate เหมือน SQL พวก query สามารถสร้าง field ใหม่ขึ้นมา จากการสรุป (group by) เป็นต้น
-    // https://devahoy.com/blog/2016/06/mongodb-aggregation-example/
     {
-      $match: { bootcamp: bootcampId }
+      $match: { bootcamp: bootcampId } // bootcamp ใน Course ตรงกับ id Bootcamp
     },
     {
       $group: {
+        // ข้อมูลใน course ไปแสดงใน boocamp
         _id: '$bootcamp',
         averageRating: { $avg: '$rating' }
       }
@@ -57,9 +58,9 @@ ReviewSchema.statics.getAverageRating = async function(bootcampId) {
 
   // Send to database
   try {
-    // * เรียก Bootcamp Schema
     await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
-      averageRating: obj[0].averageRating
+      averageRating: obj.length > 0 ? obj[0].averageRating : 0
+      // * ถ้าไม่มี obj ให้ default = 0
     });
   } catch (err) {
     console.error(err);
@@ -73,7 +74,7 @@ ReviewSchema.post('save', function() {
 });
 
 // Call getAverageRating before remove:
-// ! ต้องไป Tringger ด้วย .remove() ที่ controllers และ ยังติดปัญหาตอนลบ แล้ว avg เป็น undefined
+// ! ต้องไป Tringger ด้วย .remove() ที่ controllers
 ReviewSchema.pre('remove', function() {
   this.constructor.getAverageRating(this.bootcamp);
 });
