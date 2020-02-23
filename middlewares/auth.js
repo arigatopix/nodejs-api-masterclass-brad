@@ -44,7 +44,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 // Grant access to specific roles กำหนด roles ให้แต่ละ routes
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role) && req.user.role !== 'admin') {
       // req.user.role ไม่อยู่ใน roles ที่กำหนดให้กับ routes
       return next(
         new ErrorResponse(
