@@ -83,13 +83,54 @@ const sendTokenResponse = (user, statusCode, res) => {
 };
 
 // @desc    Get Current User
-// @route   Get /api/v1/auth/me
+// @route   GET /api/v1/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async (req, res, next) => {
   // เอา object user ที่มาจาก middleware มาค้นหาอีกที ก็จะได้ object จาก db เหมือนกัน แต่ไม่มี password เพราะ select: false
   const user = await User.findById(req.user.id);
 
   res.status(200).json({ success: true, data: user });
+});
+
+// @desc    Update User details
+// @route   PUT /api/v1/auth/updatedetails
+// @access  Private
+exports.updateDetails = asyncHandler(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    email: req.body.email
+  };
+
+  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true
+  });
+
+  res.status(200).json({ success: true, data: user });
+});
+
+// @desc    Update Password
+// @route   PUT /api/v1/auth/updatepassword
+// @access  Private
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  // ! เกี่ยวกะ password อย่าลืมเพิ่ม select('+password')
+  const user = await User.findById(req.user.id).select('+password');
+
+  const isMatch = await user.matchPassword(req.body.currentPassword);
+
+  // check current password in db
+  if (!isMatch) {
+    return next(new ErrorResponse('Password is incorrect'), 401);
+  }
+
+  // Save a new password
+  user.password = req.body.newPassword;
+  await user.save();
+
+  // Send new token
+  sendTokenResponse(user, 200, res);
+
+  // token จะบอกว่าคือใคร ซึ่ง token เก่าก็ยังใช้ได้ แต่จะ expire ไวกว่าอันใหม่
 });
 
 // @desc    Forgot password
