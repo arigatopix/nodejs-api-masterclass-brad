@@ -8,7 +8,7 @@ const Review = require('../models/Review');
 const { protect, authorize } = require('../middlewares/auth');
 const advanceResults = require('../middlewares/advancedResults');
 
-const { getReviews } = require('../controllers/reviews');
+const { getReviews, getReview } = require('../controllers/reviews');
 
 router.route('/').get(
   advanceResults(Review, {
@@ -18,6 +18,6 @@ router.route('/').get(
   getReviews
 );
 
-router.route('/:id').get(getReviews);
+router.route('/:id').get(getReview);
 
 module.exports = router;
