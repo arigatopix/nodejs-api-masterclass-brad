@@ -33,4 +33,8 @@ const ReviewSchema = new mongoose.Schema({
   }
 });
 
+// * Prevent user from submitting more than one review per bootcamp
+// ให้ 1 user สร้าง review ใน 1 bootcamp ได้ครั้งเดียว
+ReviewSchema.index({ bootcamp: 1, user: 1 }, { unique: true });
+
 module.exports = mongoose.model('Review', ReviewSchema);
