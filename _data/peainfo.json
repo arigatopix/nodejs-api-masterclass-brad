@@ -1,0 +1,42 @@
+({
+  "success": true,
+  "data": {
+    "employeeId": "503015",
+    "titleFullName": "นาย",
+    "firstName": "ธีรัช",
+    "lastName": "แก้วศรีทัศน์",
+    "departmentSap": "7885",
+    "email": "teeruch.kae@pea.co.th",
+    "newOrganizationalCode": "410209003000200",
+    "baCode": "B000",
+    "peaCode": "B00000"
+  }
+},
+{
+  "success": true,
+  "data": {
+    "employeeId": "452370",
+    "titleFullName": "นาย",
+    "firstName": "วชิรา",
+    "lastName": "พฤกษะวัน",
+    "departmentSap": "1353",
+    "email": "wachira.bri@pea.co.th",
+    "newOrganizationalCode": "410200106000300",
+    "baCode": "B051",
+    "peaCode": "B05101"
+  }
+},
+{
+  "success": true,
+  "data": {
+    "employeeId": "462896",
+    "titleFullName": "นาย",
+    "firstName": "พนาดร",
+    "lastName": "เชื้อผู้ดี",
+    "departmentSap": "1363",
+    "email": "phanadon.she@pea.co.th",
+    "newOrganizationalCode": "410200106010100",
+    "baCode": "B052",
+    "peaCode": "B05201"
+  }
+})

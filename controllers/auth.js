@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const ErrorResponse = require('../utils/errorResponse');
 const sendEmail = require('../utils/sendEmail');
+const isValidUsernameAndPassword = require('../utils/isValidUsernameAndPassword');
+const employeeInfo = require('../utils/employeeInfo');
 const asyncHandler = require('../middlewares/async');
 const User = require('../models/User');
 
@@ -26,31 +28,59 @@ exports.register = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/login
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+  // รับ username password ไปให้ util
+  const { username, password } = req.body;
 
-  // Validate Email and Password
-  if (!email || !password) {
-    return next(new ErrorResponse('Please provide an email and password', 400));
+  const isValid = await isValidUsernameAndPassword(username, password);
+  // const { RefId, ResponseCode, ResponseMsg, ResultObject } = login;
+
+  console.log(isValid);
+
+  if (!isValid) {
+    return next(new ErrorResponse(`Invalid Username or password`), 400);
   }
 
-  // Check User in db
-  const user = await User.findOne({ email }).select('+password');
-  // select() คือเอาข้อมูล password มาด้วย เพราะใน models ตั้ง false(ไม่แสดง) ไว้
+  const info = await employeeInfo(username);
 
-  if (!user) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
+  res.status(200).json({
+    success: true,
+    data: info
+  });
 
-  // Check if password matches
-  // เช็ค password hash โดยใช้ methods จาก Models
-  const isMatch = await user.matchPassword(password);
+  // console.log(login);
 
-  if (!isMatch) {
-    return next(new ErrorResponse('Password is not match', 401));
-  }
+  // util ตอบกลับ true,false
 
-  // send cookie, token and response to client with helper function
-  sendTokenResponse(user, 200, res);
+  // เช็คว่าใน db มีข้อมูลมั้ย สร้างใน db
+
+  // ส่ง token ออก
+  // if (!ResultObject) {
+  //   return next(new ErrorResponse(`Invalid Username or password`, 400));
+  // }
+
+  // // Validate Email and Password
+  // if (!email || !password) {
+  //   return next(new ErrorResponse('Please provide an email and password', 400));
+  // }
+
+  // // Check User in db
+  // const user = await User.findOne({ email }).select('+password');
+  // // select() คือเอาข้อมูล password มาด้วย เพราะใน models ตั้ง false(ไม่แสดง) ไว้
+
+  // if (!user) {
+  //   return next(new ErrorResponse('Invalid credentials', 401));
+  // }
+
+  // // Check if password matches
+  // // เช็ค password hash โดยใช้ methods จาก Models
+  // const isMatch = await user.matchPassword(password);
+
+  // if (!isMatch) {
+  //   return next(new ErrorResponse('Password is not match', 401));
+  // }
+
+  // // send cookie, token and response to client with helper function
+  // sendTokenResponse(user, 200, res);
 });
 
 // Get token from models, create cookie and send response [Helper function]

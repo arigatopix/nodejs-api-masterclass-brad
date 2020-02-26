@@ -10,7 +10,13 @@ const errorHandler = (err, req, res, next) => {
   error.message = err.message;
 
   // Log to console for dev
-  console.log(err.name);
+  // console.log(err.name);
+
+  // IDM Fetch USERNAME
+  if (err.code === 'ECONNABORTED') {
+    const message = `Invalid Username (IDM)`;
+    error = new ErrorResponse(message, 404);
+  }
 
   // *Send Error message and statusCode to Error Response แยกแต่ละเคส
   // Mongoose bad ObjectID (id ที่ส่งมาไม่ถูกต้อง)
